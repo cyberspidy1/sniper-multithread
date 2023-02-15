@@ -1,0 +1,33 @@
+import os
+import subprocess
+import concurrent.futures
+# define the path of the target file
+target_file = "<path_to_target_file>"
+# read the targets from the file
+try:
+    with open(target_file, "r") as f:
+        targets = f.readlines()
+    targets = [x.strip() for x in targets]
+except FileNotFoundError:
+    print(f"Error: {target_file} not found")
+    exit(1)
+# define the command to run the Sn1p3r scan and output directory
+output_dir = "output"
+if not os.path.exists(output_dir):
+    os.mkdir(output_dir)
+    print("Output directory created.")
+def run_scan(target):
+    target_output_dir = os.path.join(output_dir, target)
+    if not os.path.exists(target_output_dir):
+        os.mkdir(target_output_dir)
+        print(f"{target_output_dir} created.")
+    output_file = os.path.join(target_output_dir, f"{target}.txt")
+    image_id = "<local_docker_image_id>"
+    cmd = f"docker run --rm {image_id} sniper -t {target} > {output_file}"
+    # run the command in the terminal and capture the output
+    print(f"Scanning {target}...")
+    subprocess.check_call(cmd, shell=True)
+    print(f"{target} scanned successfully!")
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    futures = [executor.submit(run_scan, target) for target in targets]
+print("Sn1p3r scan completed successfully!")
